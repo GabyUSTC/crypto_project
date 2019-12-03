@@ -35,6 +35,28 @@ class fixPoint:
         result.decimal = Bin2Dec(result.bin_decimal)
         return result
 
+    def __sub__(self, other):
+        result = fixPoint(0, self.bits)
+        carry = 0
+        bin_decimal1 = self.bin_decimal
+        bin_decimal2 = other.bin_decimal
+        length = self.bits
+        dec = [0] * length
+        for i in reversed(range(length)):
+            if int(bin_decimal1[i]) - int(bin_decimal2[i]) - carry < 0:
+                dec[i] = int(bin_decimal1[i]) - int(bin_decimal2[i]) - carry + 2
+                carry = 1
+            else:
+                dec[i] = int(bin_decimal1[i]) - int(bin_decimal2[i]) - carry
+                carry = 0
+        result.int_part = self.int_part - other.int_part - carry
+        result.bin_decimal = ''
+        for i in dec:
+            result.bin_decimal = result.bin_decimal + str(i)
+        result.bits = length
+        result.decimal = Bin2Dec(result.bin_decimal)
+        return result
+
     def __mul__(self, other):
         result = fixPoint(0, self.bits)
         int1 = self.int_part
