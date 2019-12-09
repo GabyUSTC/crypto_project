@@ -7,12 +7,12 @@ class fixPoint:
         self.int_part = int(num)
         self.bin_decimal = Dec2Bin(num, self.bits)
         self.bin_decimal = self.bin_decimal + '0' * (self.bits - len(self.bin_decimal))
-        self.decimal = Bin2Dec(self.bin_decimal)
+        self.decimal = str(self.int_part) + '.' + Bin2Dec(self.bin_decimal)
 
     def print(self):
         decimal = self.decimal[2:]
         print(str(self.int_part) + '.' + decimal)
-
+    '''
     def __add__(self, other):
         result = fixPoint(0, self.bits)
         carry = 0
@@ -34,7 +34,11 @@ class fixPoint:
         result.bits = length
         result.decimal = Bin2Dec(result.bin_decimal)
         return result
-
+    '''
+    def __add__(self, other):
+        result = decimal.Decimal(self.decimal) + decimal.Decimal(other.decimal)
+        return fixPoint(num=result, bits=self.bits)
+    '''
     def __sub__(self, other):
         result = fixPoint(0, self.bits)
         carry = 0
@@ -56,7 +60,16 @@ class fixPoint:
         result.bits = length
         result.decimal = Bin2Dec(result.bin_decimal)
         return result
+    '''
 
+    def __sub__(self, other):
+        result = decimal.Decimal(self.decimal) - decimal.Decimal(other.decimal)
+        return fixPoint(num=result, bits=self.bits)
+
+    def __mul__(self, other):
+        result = decimal.Decimal(self.decimal) * decimal.Decimal(other.decimal)
+        return fixPoint(num=result, bits=self.bits)
+    '''
     def __mul__(self, other):
         result = fixPoint(0, self.bits)
         int1 = self.int_part
@@ -74,7 +87,7 @@ class fixPoint:
         a = int_int + int_dec
         a = a + dec_int
         return a + dec_dec
-
+    '''
 def Dec2Bin(dec, n):
     result = ''
     i = 0
@@ -101,7 +114,8 @@ def Bin2Dec(num):
     result = str(result)
     if result.find("E-") != -1:
         result = result.replace('.','')
-        result = '0.' + '0' * (int(result[result.find('-') + 1:]) - 1) + result[:result.find('E')]
+        result = '0' * (int(result[result.find('-') + 1:]) - 1) + result[:result.find('E')]
+    result = str(result)[2:]
     return result
 
 def int_mul_dec(integer, dec, bits):
