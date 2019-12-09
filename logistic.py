@@ -1,6 +1,8 @@
 from fixPoint import *
 from matplotlib import pyplot as plt
 import numpy as np
+import time
+from multiprocessing import Pool
 '''
 a = fixPoint(num=1.5, bits=32)
 b = fixPoint(num=2.8, bits=32)
@@ -15,7 +17,6 @@ print(f.bin_decimal)
 print(c.bin_decimal)
 d = dec_mul_dec(a.bin_decimal, b.bin_decimal)
 e = a * b
-
 print(d.bin_decimal)
 e.print()
 print(e.bin_decimal)
@@ -39,8 +40,25 @@ class logistic:
             rand_seq.append(x)
             x = self.logistic_equation(x)
         return rand_seq
+
+    def file_output(self):
+        seq = self.generator()
+        context = '#==================================================================\n' \
+                  '# generator logistic  seed = {0}{1}\n' \
+                  '#==================================================================\n'\
+                  'type: b\n' \
+                  'count: {2}\n' \
+                  'numbit: {3}\n'.format(self.u.int_part, self.u.decimal[1:], self.iters, self.bits)
+        for rand in seq:
+            #rand = int('0b' + rand.bin_decimal, 2)
+            #context = context + str(rand.int_part) + rand.decimal[1:] + '\n'
+            context = context + rand.bin_decimal + '\n'
+        f = open("random.txt", mode="w", encoding="utf-8")
+        f.write(context)
+        f.close()
+
 '''
-log1 = logistic(u=3.99, iters=300)
+log1 = logistic(u=3.99, iters=10000)
 seq = log1.generator()
 x = np.arange(0, len(seq), 1)
 y = np.array([float(i.decimal) for i in seq])
@@ -50,13 +68,62 @@ plt.plot(x, y, 'r.')
 plt.show()
 '''
 
-u_list = np.arange(3.55, 3.99, 0.01)
-y = []
+def period_test(u, bits=8):
+    #x0_list = np.arange(0.1, 0.9, 0.1)
+    #x0_list.tolist()
+    x0_list = [0.4, 0.7]
+    count = 0
+    for x0 in x0_list:
+        seq = []
+        log = logistic(u=u, x0=x0, bits=bits)
+        x = log.x0
+        while x.decimal not in seq:
+            seq.append(x.decimal)
+            x = log.logistic_equation(x)
+            count += 1
+        count = count - seq.index(x.decimal)
+    print(u, count / len(x0_list))
+    return count / len(x0_list)
+
+'''
+u_list = np.arange(3.56, 4, 0.01)
+x0_list = np.arange(0.1, 0.9, 0.1)
+T = []
 u_list.tolist()
+x0_list.tolist()
+start = time.clock()
 for u in u_list:
-    log = logistic(u=u, iters=300)
-    seq = log.generator()
-    y.append(float(seq[299].decimal))
-plt.plot(u_list, y, 'r.')
+    count = 0
+    for x0 in x0_list:
+        seq = []
+        log = logistic(u=u, x0=x0, bits=8, iters=100)
+        x = log.x0
+        while x.decimal not in seq:
+            seq.append(x.decimal)
+            x = log.logistic_equation(x)
+            count += 1
+    T.append(count / len(x0_list))
+end = time.clock()
+print(u_list)
+print(T)
+print('Running time: %s Seconds'%(end-start))
+plt.plot(u_list, T, 'r')
 plt.show()
+'''
+'''
+u_list = np.arange(3.56, 4, 0.01)
+u_list.tolist()
+start = time.time()
+pool = Pool()
+T = pool.map(period_test, u_list)
+pool.close()
+pool.join()
+end = time.time()
+print('Running time: %s Seconds'%(end-start))
+print(T)
+plt.plot(u_list, T, 'r')
+plt.show()
+'''
+log1 = logistic(u=3.68, iters=40000, bits=32, x0=0.4)
+log1.file_output()
 
